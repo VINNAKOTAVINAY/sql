@@ -1,0 +1,92 @@
+<html>
+	<head>
+		<title>Login Page</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<head>
+	<style>
+		body{
+			border-style:double;
+			border-color:black;
+			background-color:#D3D3D3;
+			border-width: thick;
+			border-width: 20px;
+		}
+		#vertical{
+			height: 320px;
+			border-left: 3px solid black;
+			position: absolute;
+			top: 5px;
+			left: 250px;
+			text-align:center;
+		}
+		#r{
+			position:relative;
+			top: 130px;
+			left: -20px;
+			color: black;
+		}
+		.button {
+			background-color: #3b5998;
+			border: none;
+			color: white;
+			padding: 15px 32px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 16px;
+			margin: 4px 2px;
+			cursor: pointer;
+		}
+		.badge {
+			padding: 1px 15px 5px;
+			font-size: 20px;
+			font-weight: bold;
+			white-space: nowrap;
+			color: blue;
+			background-color: white;
+			-webkit-border-radius: 15px;
+			-moz-border-radius: 15px;
+			border-radius: 5px;
+		}
+	</style>
+	<body>
+		<div class="container-fluid">
+			<div class = "row">
+				<br><br><br><br>
+				<div class="col-sm-1">
+				</div>				
+				<div class="col-sm-11">
+					<p><b><font size = "6px">Login</font><font size = "4px"> or </b><u> <a href = "#"> Register a new Account </a> </u></font><p>
+				</div>
+				<br><br><br><br><br>
+			</div>
+			<div class = "row">
+				<div class="col-sm-1">
+				</div>
+				<div class="col-sm-2">				
+					<font size = "4px"><b>Forgot Password?</b></font>
+					<br><br><br>
+					<b><font size = "4px">Email ID </font><font color = "red">*</font></b>
+					<br>
+					<input type = "text" name = "mail" placeholder = "****@****.com" ><br>
+					<br>
+					<input type = "submit" value = "Email Password" style="background-color: black; color: white; font-weight: bold;">
+				</div>
+				<div class="col-sm-3">
+					<div id="vertical">
+						<font color = "black" ><span class="badge" id="r"><h4>OR</h4></span></font>
+					</div>
+				</div>
+				<div class="col-sm-4" >
+					<font size = "4px"><b>Have a Facebook account?</b></font>
+					<br><br><br>
+					<button type = "button" class="button"><span class="badge">f</span><font color="white"> Log In with Facebook</font></button>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
