@@ -6,6 +6,27 @@
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/jquery/1.12.4/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+		<script src="js/form-validation.js"></script>
+		<script>
+			$(document).ready(function() {
+				$('form[id="myForm"]').validate({
+					rules: {
+						email: {
+							required: true,
+							email: true,
+						}
+					},
+					messages: {
+						email: '<font color = "red"> Please enter a valid email ID (example: ****@****.com)<font>'
+					},
+					submitHandler: function(form) {
+						form.submit();
+					}
+				});
+			});
+		</script>
 	<head>
 	<style>
 		body{
@@ -70,11 +91,12 @@
 				<div class="col-sm-2">				
 					<font size = "4px"><b>Forgot Password?</b></font>
 					<br><br><br>
-					<b><font size = "4px">Email ID </font><font color = "red">*</font></b>
-					<br>
-					<input type = "text" name = "mail" placeholder = "****@****.com" ><br>
-					<br>
-					<input type = "submit" value = "Email Password" style="background-color: black; color: white; font-weight: bold;">
+					<form action="" name="myForm" id="myForm">
+					<label for="email"<b><font size = "4px">Email ID </font><font color = "red">*</font></b></label>
+					<input type="email" name="email" id="email" placeholder="****@****.com"/>
+					<br><br>					
+					<button type = "submit" style="background-color: black; color: white; font-weight: bold;" >Email Password</button>
+					</form>
 				</div>
 				<div class="col-sm-3">
 					<div id="vertical">
