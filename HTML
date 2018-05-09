@@ -8,106 +8,175 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
 		<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js" type="text/javascript"></script>
-		<script src="js/form-validation.js"></script>
 		<script type="text/javascript">
-			$(function() {
-				$("form[name='myForm']").validate({
-					rules: {
-						email: {
-							required: true,     
-							email: true
-						},
-					},
-					messages: {
-						email: "<font color = 'red'>Please enter valid email ID(example: ****@****.com)</font>"
-					},
-					submitHandler: function(form) {
-						form.submit();
-					}
-				});
-			});
-</script>
-
+            function Captcha(){
+                var alpha = new Array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z');
+                var i;
+                for (i=0;i<6;i++){
+                    var a = alpha[Math.floor(Math.random() * alpha.length)];
+                    var b = alpha[Math.floor(Math.random() * alpha.length)];
+                    var c = alpha[Math.floor(Math.random() * alpha.length)];
+                    var d = alpha[Math.floor(Math.random() * alpha.length)];
+                    var e = alpha[Math.floor(Math.random() * alpha.length)];
+                    var f = alpha[Math.floor(Math.random() * alpha.length)];
+                    var g = alpha[Math.floor(Math.random() * alpha.length)];
+                }
+                var code = a + ' ' + b + ' ' + ' ' + c + ' ' + d + ' ' + e + ' '+ f + ' ' + g;
+                document.getElementById("mainCaptcha").value = code
+            }
+		</script>
 	</head>
 	<style>
 		body{
 			border-style:double;
 			border-color:black;
-			background-color:#D3D3D3;
+			background-color:white;
 			border-width: thick;
-			border-width: 20px;
+			border-width: 5px;
 		}
-		#vertical{
-			height: 320px;
-			border-left: 3px solid black;
-			position: absolute;
-			top: 5px;
-			left: 250px;
-			text-align:center;
+		hr{
+			border-color:black;
 		}
 		#r{
-			position:relative;
-			top: 130px;
-			left: -20px;
+			position: absolute;
+			top: 80px;
+			left: 550px;
 			color: black;
 		}
-		.button {
-			background-color: #3b5998;
-			border: none;
-			color: white;
-			padding: 15px 32px;
-			text-align: center;
-			text-decoration: none;
-			display: inline-block;
-			font-size: 16px;
-			margin: 4px 2px;
-			cursor: pointer;
-		}
 		.badge {
-			padding: 1px 15px 5px;
-			font-size: 20px;
+			padding: 1px 5px 5px;
+			font-size: 10px;
 			font-weight: bold;
 			white-space: nowrap;
 			color: blue;
 			background-color: white;
-			-webkit-border-radius: 15px;
-			-moz-border-radius: 15px;
-			border-radius: 5px;
+			-webkit-border-radius: 9px;
+			-moz-border-radius: 9px;
+			border-radius: 30px;
+			
+		}
+		#firstRow{
+			background-color: lightgrey;
+		}
+		.buttonCSS{
+			padding: 1px 30px 5px;			
+			font-weight: bold;
+			white-space: nowrap;
+			color: blue;
+			background-color: white;
+			-webkit-border-radius: 9px;
+			-moz-border-radius: 9px;
+			border-radius: 10px;
 		}
 	</style>
-	<body>
+	<body onload="Captcha()">
 		<div class="container-fluid">
-			<div class = "row">
-				<br><br><br><br>
-				<div class="col-sm-1">
-				</div>				
-				<div class="col-sm-11">
-					<p><b><font size = "6px">Login</font><font size = "4px"> or </b><u> <a href = "#"> Register a new Account </a> </u></font><p>
-				</div>
-				<br><br><br><br><br>
-			</div>
-			<div class = "row">
-				<div class="col-sm-1">
+			<div class = "row" id = "firstRow">
+				<div class="col-sm-6 text-center">
+					<br><b><font size="5px">Already Registered?</font></b>
 				</div>
 				<div class="col-sm-2">				
-					<font size = "4px"><b>Forgot Password?</b></font>
-					<br><br><br>
-					<form action="" name="myForm" id="myForm">
-					<label for="email"<b><font size = "4px">Email ID </font><font color = "red">*</font></b></label>
-					<input type="email" name="email" id="email" placeholder="****@****.com"/>
-					<br><br>					
-					<button type = "submit" style="background-color: black; color: white; font-weight: bold;" >Email Password</button>
-					</form>
+					<label for="email"><b><font size = "3px">Email ID</font></b></label><br>				
+					<input type="email" name="email" id="email" style="background-color:lightgrey;"/>
+				</div>
+				<div class="col-sm-2">
+					<label for="password"><b><font size = "3px">Password</font></b></label><br>				
+					<input type="password" name="password" id="password" style="background-color:lightgrey;"/>
+				</div>
+				<div class="col-sm-2">
+					<br><button type = "submit" style="background-color:black;" class="buttonCSS"><font color="white"><b>GO</></font></button>
+				</div>
+			</div>
+			<div class = "row" id = "firstRow">
+				<br>
+			</div>
+			<div class = "row">
+				<hr><font color = "black" ><span class="badge" id="r"><h4>OR</h4></span></font>
+			</div>
+			<div class = "row">
+				<div class="col-sm-3">
+					<label for="registerAs" ><b><font size = "3px">Register As*</font></b></label><br>
+					<select style="background-color:lightgrey; width:190px;height:25px;">
+						<option value="Default">Select member type</option>
+						<option value="Admin">Admin</option>
+						<option value="User">User</option>			
+					</select>
+				</div>
+			</div>
+			
+			<div class = "row">
+				<div class="col-sm-3">
+					<br><label for="email"><b><font size = "3px">Email ID*</font></b></label><br>
+					<input type="email" name="email" id="email" placeholder="****@****.com" style="background-color:lightgrey;"/><br>
+				</div>
+			</div>
+			
+			<div class = "row">
+				<div class="col-sm-3">
+					<br><label for="password"><b><font size = "3px">Password*</font></b></label><br>				
+					<input type="password" name="password" id="password" style="background-color:lightgrey;"/>
 				</div>
 				<div class="col-sm-3">
-					<div id="vertical">
-						<font color = "black" ><span class="badge" id="r"><h4>OR</h4></span></font>
-					</div>
+					<br><label for="cpassword"><b><font size = "3px">Confirm Password</font></b></label><br>				
+					<input type="password" name="cpassword" id="cpassword" style="background-color:lightgrey;"/>
 				</div>
-				<div class="col-sm-4" >
-					<font size = "4px"><b>Have a Facebook account?</b></font>
-					<br><br><br>
-					<button type = "button" class="button"><span class="badge">f</span><font color="white"> Log In with Facebook</font></button>
+			</div>
+			
+			<div class = "row">
+				<div class="col-sm-3">
+					<br><label for="fname"><b><font size = "3px">Full Name*</font></b></label><br>
+					<input type="text" name="fname" id="fname" placeholder="First name" style="background-color:lightgrey;"/>
+				</div>
+				<div class="col-sm-3">
+					<br><br>
+					<input type="text" name="mname" id="mname" placeholder="Middle name" style="background-color:lightgrey;"/>
+				</div>
+				<div class="col-sm-3">
+					<br><br>
+					<input type="text" name="lname" id="lname" placeholder="Last name" style="background-color:lightgrey;"/>
+				</div>
+			</div>
+			
+			<div class = "row">
+				<div class="col-sm-3">
+					<br><label for="dname"><b><font size = "3px">Display Name</font></b></label><br>
+					<input type="text" name="dname" id="dname" style="background-color:lightgrey;"/><br>
+				</div>
+				<div class="col-sm-3">	
+					<br><label for="telnum"><b><font size = "3px">Mobile Number*</font></b></label><br>
+					<input type="text" name="telnum" id="telnum" style="background-color:lightgrey;"/><br>
+				</div>
+				<div class="col-sm-3">		
+					<br><label for="gender"><b><font size = "3px">Gender*</font></b></label><br>
+					<select style="background-color:lightgrey; width:190px;height:25px;">
+						<option value="default"></option>
+						<option value="male">Male</option>
+						<option value="female">Female</option>			
+						<option value="others">Others</option>			
+					</select>
+				</div>
+			</div>
+			
+			<div class = "row">
+				<div class="col-sm-3">
+					<br><label for="mainCaptcha"><b><font size = "3px">Captcha*</font></b></label><br>
+					<textarea name ="mainCaptcha" id="mainCaptcha" rows="2" cols="21" style="text-align:center;"/></textarea>
+				</div>
+				<div class="col-sm-3">	
+					<br><label for="captchcode"><b><font size = "3px">Enter the code here</font></b></label><br>
+					<input type="text" name="captchcode" id="captchcode" style="background-color:lightgrey;"/>
+				</div>	
+			</div>
+			<div class = "row">
+				<div class="col-sm-6">
+					<br><input type="checkbox" name="captchcode" id="captchcode"/>
+					<b><font size = "3px">I have read, understood, and accepted the rules for membership</font></b>
+				</div>
+			</div>
+			<div class = "row" id="lastRow">
+				<div class="col-sm-11  text-right">
+					<button type = "submit" style="background-color:grey;" class="buttonCSS"><font color="white"><b>Cancel</b></font></button>&nbsp;&nbsp;&nbsp;
+					<button type = "submit" style="background-color:black;" class="buttonCSS"><font color="white"><b>Register</b></font></button>
 				</div>
 			</div>
 		</div>
