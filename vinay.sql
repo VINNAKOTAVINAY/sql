@@ -1,200 +1,280 @@
---1. Display the last name concatenated with the job ID, separated by a comma and space, and name the column Employee and Title.
+CREATE TABLE HALLS
+(
+   HNAME          VARCHAR2 (4) PRIMARY KEY,
+   HTYPE          VARCHAR2 (10),
+   RENT           NUMBER (5),
+   NOOFBOOKINGS   NUMBER (2)
+);
+/
 
-SELECT LAST_NAME || ’, ’ || JOB_ID "Employee and Title"
-  FROM EMPLOYEES;
+CREATE TABLE COMPANY
+(
+   CCODE         NUMBER (3) PRIMARY KEY,
+   COMPANYNAME   VARCHAR2 (10),
+   CONTACTNO     NUMBER (10)
+);
+/
 
---2. Create a query to display all the data from the EMPLOYEES table. Separate each column by a comma. Name the column THE_OUTPUT.
+CREATE TABLE BOOKING
+(
+   TRANSID     NUMBER (2) PRIMARY KEY,
+   CCODE       NUMBER (3),
+   HNAME       VARCHAR2 (4),
+   STARTDATE   DATE,
+   ENDDATE     DATE,
+   CONSTRAINT FK_CCODE FOREIGN KEY (CCODE) REFERENCES COMPANY (CCODE),
+   CONSTRAINT FK_HNAME FOREIGN KEY (HNAME) REFERENCES HALLS (HNAME)
+);
+/
 
-SELECT EMPLOYEE_ID || ’,
-       ’ || FIRST_NAME || ’,
-       ’ || LAST_NAME || ’,
-       ’ || EMAIL || ’,
-       ’ || PHONE_NUMBER || ’,
-       ’ || JOB_ID || ’,
-       ’ || MANAGER_ID || ’,
-       ’ || HIRE_DATE || ’,
-       ’ || SALARY || ’,
-       ’ || COMMISSION_PCT || ’,
-       ’ || DEPARTMENT_ID THE_OUTPUT
-  FROM EMPLOYEES;
+-- 1. CREATE A SEQUENCE TO GENERATE TRANSACTION ID.
 
---3. Create a query to display the last name and salary for all employees whose salary is not in the range of 5,000 and 12,000.
+CREATE SEQUENCE SEQ_TRANSACTIONID MINVALUE 1
+                                  MAXVALUE 999999999999999999999999999
+                                  START WITH 1
+                                  INCREMENT BY 1
+                                  CACHE 20;
+/
 
-SELECT LAST_NAME, SALARY
-  FROM EMPLOYEES
- WHERE SALARY NOT BETWEEN 5000 AND 12000;
+-- 2. CREATE A PACKAGE NAMED CONFERENCE_AUTOMATION
 
---4. Display the employee last name, job ID, and start date of employees hired between February 20, 1998, and May 1, 1998. Order the query in ascending order by start date.
+CREATE OR REPLACE PACKAGE CONFERENCE_AUTOMATION
+IS
+   -- 2.a PROCEDURE TO INSERT ONE RECORD IN ‘BOOKING’ TABLE
+   PROCEDURE P_INS_BOOKING (P_CCODE        NUMBER,
+                            P_HNAME        VARCHAR,
+                            P_STARTDATE    DATE,
+                            P_ENDDATE      DATE);
 
-  SELECT LAST_NAME, JOB_ID, HIRE_DATE
-    FROM EMPLOYEES
-   WHERE HIRE_DATE BETWEEN TO_DATE ('20-FEB-98', 'DD-MON-YY')
-                       AND TO_DATE ('01-MAY-98', 'DD-MON-YY')
-ORDER BY HIRE_DATE;
+   -- 2.b PROCEDURE TO RETRIEVE THE TOTAL NUMBER OF BOOKINGS
+   PROCEDURE P_TOTAL_BOOKINGS (P_HTYPE VARCHAR2);
 
---5. Display the last name and department number of all employees in departments 20 and 50 in alphabetical order by name.
+   -- 2.c PROCEDURE TO GENERATE THE REPORT
+   PROCEDURE P_DISPLAY_RECORDS (P_CCODE NUMBER);
 
-  SELECT LAST_NAME, DEPARTMENT_ID
-    FROM EMPLOYEES
-   WHERE DEPARTMENT_ID IN (20, 50)
-ORDER BY LAST_NAME;
+   -- 2.d PROCEDURE TO GET THE RENT FROM “HALLS” TABLE AND CALCULATE THE COST
+   PROCEDURE P_RENT_CALC (P_DAYS NUMBER, P_HNAME VARCHAR2);
 
---6. Display the last name and job title of all employees who do not have a manager.
+   -- 2.e.i PRIVATE FUNCTION TO VALIDATE COMPANY CODE
+   FUNCTION F_VALIDATE_CCODE (P_CCODE NUMBER)
+      RETURN VARCHAR2;
 
-SELECT A.LAST_NAME, B.JOB_TITLE
-  FROM EMPLOYEES A, JOBS B
- WHERE A.JOB_ID = B.JOB_ID AND A.MANAGER_ID IS NULL;
+   -- 2.e.ii PRIVATE FUNCTION TO VALIDATE HALL CAPACITY
+   FUNCTION F_VALIDATE_HTYPE (P_HTYPE VARCHAR2)
+      RETURN VARCHAR2;
+END CONFERENCE_AUTOMATION;
+/
 
---7. Display the last name, salary, and commission for all employees who earn commissions. Sort data in descending order of salary and commissions.
+-- 2. CREATE A PACKAGE NAMED CONFERENCE_AUTOMATION STARTS HERE
 
-  SELECT LAST_NAME, SALARY, COMMISSION_PCT
-    FROM EMPLOYEES
-   WHERE COMMISSION_PCT IS NOT NULL
-ORDER BY SALARY DESC, COMMISSION_PCT DESC;
+CREATE OR REPLACE PACKAGE BODY CONFERENCE_AUTOMATION
+IS
+   -- 2.a PROCEDURE TO INSERT ONE RECORD IN ‘BOOKING’ TABLE  STARTS HERE
+   PROCEDURE P_INS_BOOKING (P_CCODE        NUMBER,
+                            P_HNAME        VARCHAR,
+                            P_STARTDATE    DATE,
+                            P_ENDDATE      DATE)
+   IS
+      V_SQL           VARCHAR2 (4000);
+      V_COUNT_CCODE   NUMBER;
+      V_COUNT_HNAME   NUMBER;
+   BEGIN
+      SELECT COUNT (*)
+        INTO V_COUNT_CCODE
+        FROM COMPANY
+       WHERE CCODE = P_CCODE;
 
---8. For each employee, display the employee number, last_name, salary, and salary increased by 15% and expressed as a whole number. Label the column New Salary.
+      IF V_COUNT_CCODE <> 0
+      THEN
+         SELECT COUNT (*)
+           INTO V_COUNT_HNAME
+           FROM HALLS
+          WHERE HNAME = P_HNAME;
 
-SELECT EMPLOYEE_ID,
-       LAST_NAME,
-       SALARY,
-       ROUND ( (SALARY + (SALARY * 15) / 100), 0) "New Salary"
-  FROM EMPLOYEES;
+         IF V_COUNT_HNAME <> 0
+         THEN
+            INSERT INTO BOOKING (TRANSID,
+                                 CCODE,
+                                 HNAME,
+                                 STARTDATE,
+                                 ENDDATE)
+                 VALUES (SEQ_TRANSACTIONID.NEXTVAL,
+                         P_CCODE,
+                         P_HNAME,
+                         P_STARTDATE,
+                         P_ENDDATE);
+         ELSE
+            DBMS_OUTPUT.PUT_LINE ('HNAME IS NOT EXIST');
+         END IF;
+      ELSE
+         DBMS_OUTPUT.PUT_LINE ('CCODE IS NOT EXIST');
+      END IF;
+   EXCEPTION
+      WHEN NO_DATA_FOUND
+      THEN
+         DBMS_OUTPUT.PUT_LINE ('NO DATA FOUND. TRY AGAIN');
+      WHEN OTHERS
+      THEN
+         DBMS_OUTPUT.PUT_LINE ('ERROR OCCURED IS: ' || SQLERRM);
+   END P_INS_BOOKING;
 
---9. Modify your above query to add a column that subtracts the old salary from the new salary. Label the column Increase.
+   -- 2.a PROCEDURE TO INSERT ONE RECORD IN ‘BOOKING’ TABLE  ENDS HERE
 
-SELECT EMPLOYEE_ID,
-       LAST_NAME,
-       SALARY,
-       ROUND ( (SALARY + (SALARY * 15) / 100), 0) "New Salary",
-       ROUND ( (SALARY + (SALARY * 15) / 100), 0) - SALARY "Increase"
-  FROM EMPLOYEES;
+   -- 2.b PROCEDURE TO RETRIEVE THE TOTAL NUMBER OF BOOKINGS STARTS HERE
+   PROCEDURE P_TOTAL_BOOKINGS (P_HTYPE VARCHAR2)
+   IS
+      V_TOTAL_BOOKINGS   NUMBER;
+   BEGIN
+      SELECT NOOFBOOKINGS
+        INTO V_TOTAL_BOOKINGS
+        FROM HALLS
+       WHERE HTYPE = P_HTYPE;
 
---10. Write a query that displays the employee’s last names with the first letter capitalized and all other letters lowercase and the length of the name for all employees whose name starts with J, A, or M. Give each column an appropriate label. Sort the results by the employees’ last names.
+      DBMS_OUTPUT.PUT_LINE ('TOTAL NO OF BOOKINGS ARE: ' || V_TOTAL_BOOKINGS);
+   EXCEPTION
+      WHEN NO_DATA_FOUND
+      THEN
+         DBMS_OUTPUT.PUT_LINE ('NO DATA FOUND. TRY AGAIN');
+      WHEN OTHERS
+      THEN
+         DBMS_OUTPUT.PUT_LINE ('ERROR OCCURED IS: ' || SQLERRM);
+   END P_TOTAL_BOOKINGS;
 
-  SELECT INITCAP (LAST_NAME) "Name", LENGTH (LAST_NAME) "Length"
-    FROM EMPLOYEES
-   WHERE LAST_NAME LIKE 'J%' OR LAST_NAME LIKE 'M%' OR LAST_NAME LIKE 'A%'
-ORDER BY LAST_NAME;
+   -- 2.b PROCEDURE TO RETRIEVE THE TOTAL NUMBER OF BOOKINGS ENDS HERE
 
---11. Create a unique listing of all jobs that are in department 80. Include the location of the department in the output.
+   -- 2.c PROCEDURE TO GENERATE THE REPORT STARTS HERE
+   PROCEDURE P_DISPLAY_RECORDS (P_CCODE NUMBER)
+   IS
+      V_COUNT_CCODE   NUMBER;
+      V_TRANSID       NUMBER;
+      V_HNAME         VARCHAR2 (100);
+      V_STARTDATE     DATE;
+      V_ENDDATE       DATE;
+   BEGIN
+      SELECT COUNT (CCODE) INTO V_COUNT_CCODE FROM COMPANY;
 
-SELECT DISTINCT JOB.JOB_TITLE, LOC.CITY, DEPT.DEPARTMENT_ID
-  FROM EMPLOYEES EMP,
-       DEPARTMENTS DEPT,
-       JOBS JOB,
-       LOCATIONS LOC
- WHERE     EMP.DEPARTMENT_ID = DEPT.DEPARTMENT_ID
-       AND EMP.JOB_ID = JOB.JOB_ID
-       AND DEPT.LOCATION_ID = LOC.LOCATION_ID
-       AND EMP.DEPARTMENT_ID = 80;
+      IF V_COUNT_CCODE <> 0
+      THEN
+         SELECT TRANSID,
+                HNAME,
+                STARTDATE,
+                ENDDATE
+           INTO V_TRANSID,
+                V_HNAME,
+                V_STARTDATE,
+                V_ENDDATE
+           FROM BOOKING
+          WHERE CCODE = P_CCODE;
 
---12. Display the employee last name and department name for all employees who have an “a” (lowercase) in their last names.
+         DBMS_OUTPUT.PUT_LINE ('THE VALUES ARE');
+         DBMS_OUTPUT.PUT_LINE ('TRANSACTION ID IS: ' || V_TRANSID);
+         DBMS_OUTPUT.PUT_LINE ('HALL NAME IS: ' || V_TRANSID);
+         DBMS_OUTPUT.PUT_LINE ('START DATE IS: ' || V_STARTDATE);
+         DBMS_OUTPUT.PUT_LINE ('END DATE IS: ' || V_ENDDATE);
+      ELSE
+         DBMS_OUTPUT.PUT_LINE ('PLEASE ENETER VALID COMPANY CODE');
+      END IF;
+   EXCEPTION
+      WHEN NO_DATA_FOUND
+      THEN
+         DBMS_OUTPUT.PUT_LINE ('NO DATA FOUND. TRY AGAIN');
+      WHEN OTHERS
+      THEN
+         DBMS_OUTPUT.PUT_LINE ('ERROR OCCURED IS: ' || SQLERRM);
+   END P_DISPLAY_RECORDS;
 
-SELECT EMP.LAST_NAME, DEPT.DEPARTMENT_NAME
-  FROM EMPLOYEES EMP, DEPARTMENTS DEPT
- WHERE     EMP.DEPARTMENT_ID = DEPT.DEPARTMENT_ID
-       AND LOWER (EMP.LAST_NAME) LIKE '%a%';
+   -- 2.c PROCEDURE TO GENERATE THE REPORT ENDS HERE
 
---13. Write a query to display the last name, job, department number, and department name for all employees who work in Toronto.
+   -- 2.d PROCEDURE TO GET THE RENT FROM “HALLS” TABLE AND CALCULATE THE COST STARTS HERE
+   PROCEDURE P_RENT_CALC (P_DAYS NUMBER, P_HNAME VARCHAR2)
+   IS
+      V_COST          NUMBER;
+      V_COUNT_HNAME   NUMBER;
+      V_RENT          NUMBER;
+   BEGIN
+      SELECT COUNT (*) INTO V_COUNT_HNAME FROM HALLS;
 
-SELECT E.LAST_NAME,
-       J.JOB_TITLE,
-       E.DEPARTMENT_ID,
-       D.DEPARTMENT_NAME
-  FROM EMPLOYEES E
-       JOIN DEPARTMENTS D ON (E.DEPARTMENT_ID = D.DEPARTMENT_ID)
-       JOIN LOCATIONS L ON (D.LOCATION_ID = L.LOCATION_ID)
-       JOIN JOBS J ON (E.JOB_ID = J.JOB_ID)
- WHERE LOWER (L.CITY) = ’Toronto’;
+      IF V_COUNT_HNAME <> 0
+      THEN
+         SELECT RENT
+           INTO V_RENT
+           FROM HALLS
+          WHERE HNAME = P_HNAME;
 
---14. Create a query that displays employee last names, department numbers, and all the employees who work in the same department as a given employee. Give each column an appropriate label.
+         V_COST := P_DAYS * V_RENT;
+         DBMS_OUTPUT.PUT_LINE ('THE COST OF HALL IS: ' || V_COST);
+      ELSE
+         DBMS_OUTPUT.PUT_LINE ('PLEASE ENTER VALID HALL NAME');
+      END IF;
+   EXCEPTION
+      WHEN NO_DATA_FOUND
+      THEN
+         DBMS_OUTPUT.PUT_LINE ('NO DATA FOUND. TRY AGAIN');
+      WHEN OTHERS
+      THEN
+         DBMS_OUTPUT.PUT_LINE ('ERROR OCCURED IS: ' || SQLERRM);
+   END P_RENT_CALC;
 
-  SELECT E.DEPARTMENT_ID DEPARTMENT,
-         E.LAST_NAME EMPLOYEE,
-         C.LAST_NAME COLLEAGUE
-    FROM EMPLOYEES E JOIN EMPLOYEES C ON (E.DEPARTMENT_ID = C.DEPARTMENT_ID)
-   WHERE E.EMPLOYEE_ID <> C.EMPLOYEE_ID
-ORDER BY E.DEPARTMENT_ID, E.LAST_NAME, C.LAST_NAME;
+   -- 2.d PROCEDURE TO GET THE RENT FROM “HALLS” TABLE AND CALCULATE THE COST ENDS HERE
 
---15. Display the names and hire dates for all employees who were hired before their managers, along with their manager’s names and hire dates. Label the columns Employee, Emp Hired, Manager, and Mgr Hired, respectively.
+   -- 2.e.i PRIVATE FUNCTION TO VALIDATE COMPANY CODE STARTS HERE
+   FUNCTION F_VALIDATE_CCODE (P_CCODE NUMBER)
+      RETURN VARCHAR2
+   IS
+      V_LENGTH_CCODE   NUMBER;
+   BEGIN
+      SELECT LENGTH (P_CCODE) INTO V_LENGTH_CCODE FROM DUAL;
 
-SELECT A.LAST_NAME,
-       A.HIRE_DATE,
-       B.LAST_NAME,
-       B.HIRE_DATE
-  FROM EMPLOYEES A, EMPLOYEES B
- WHERE A.MANAGER_ID = B.EMPLOYEE_ID AND A.HIRE_DATE < B.HIRE_DATE;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    -- OR
+      IF V_LENGTH_CCODE = 3
+      THEN
+         IF P_CCODE BETWEEN 100 AND 999
+         THEN
+            RETURN 'ENTERED RIGHT DATA';
+         ELSE
+            RETURN 'CCODE SHOULD BE BTW 100 AND 999';
+         END IF;
+      ELSE
+         RETURN 'CCODE SHOULD BE 3 DIGITS ONLY';
+      END IF;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         RETURN 'CCODE SHOULD BE ONLY NUMBER';
+   END F_VALIDATE_CCODE;
 
---16. Display the highest, lowest, sum, and average salary of all employees. Label the columns Maximum, Minimum, Sum, and Average, respectively. Round your results to the nearest whole number
+   -- 2.e.i PRIVATE FUNCTION TO VALIDATE COMPANY CODE ENDS HERE
 
-SELECT ROUND (MAX (SALARY), 0) "Maximum",
-       ROUND (MIN (SALARY), 0) "Minimum",
-       ROUND (SUM (SALARY), 0) "Sum",
-       ROUND (AVG (SALARY), 0) "Average"
-  FROM EMPLOYEES;
+   -- 2.e.ii PRIVATE FUNCTION TO VALIDATE HALL CAPACITY STARTS HERE
+   FUNCTION F_VALIDATE_HTYPE (P_HTYPE VARCHAR2)
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      IF P_HTYPE IN ('SMALL', 'MEDIUM', 'LARGE')
+      THEN
+         RETURN 'VALID ENTERED DATA';
+      ELSE
+         RETURN 'ENTER VALID DATA';
+      END IF;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         RETURN 'ENTER VALID DATA';
+   END F_VALIDATE_HTYPE;
+-- 2.e.ii PRIVATE FUNCTION TO VALIDATE HALL CAPACITY STARTS HERE
+END;
+/
 
---17. Determine the number of managers without listing them. Label the column Number of Managers.
+-- 2. CREATE A PACKAGE NAMED CONFERENCE_AUTOMATION ENDS HERE
 
-SELECT COUNT (DISTINCT MANAGER_ID) "Number of Managers" FROM EMPLOYEES;
+-- 3. CREATE TRIGGER TRIG_UPDATE.
 
---18. Create a query that will display the total number of employees and, of that total, the number of employees hired in 1995, 1996, 1997, and 1998. Create appropriate column headings.
-
-SELECT COUNT (*) TOTAL,
-       SUM (DECODE (TO_CHAR (HIRE_DATE, ’YYYY’), 1995, 1, 0)) "1995",
-       SUM (DECODE (TO_CHAR (HIRE_DATE, ’YYYY’), 1996, 1, 0)) "1996",
-       SUM (DECODE (TO_CHAR (HIRE_DATE, ’YYYY’), 1997, 1, 0)) "1997",
-       SUM (DECODE (TO_CHAR (HIRE_DATE, ’YYYY’), 1998, 1, 0)) "1998"
-  FROM EMPLOYEES;
-
---19. Create a matrix query to display the job, the salary for that job based on department number, and the total salary for that job, for departments 20, 50, 80, and 90, giving each column an appropriate heading.
-
-  SELECT JOB_ID "Job",
-         SUM (DECODE (DEPARTMENT_ID, 20, SALARY)) "Dept 20",
-         SUM (DECODE (DEPARTMENT_ID, 50, SALARY)) "Dept 50",
-         SUM (DECODE (DEPARTMENT_ID, 80, SALARY)) "Dept 80",
-         SUM (DECODE (DEPARTMENT_ID, 90, SALARY)) "Dept 90",
-         SUM (SALARY) "Total"
-    FROM EMPLOYEES
-GROUP BY JOB_ID;
-
---20. Write a query that displays the employee numbers and last names of all employees who work in a department with any employee whose last name contains a “u”.
-
-SELECT EMPLOYEE_ID, LAST_NAME
-  FROM EMPLOYEES
- WHERE DEPARTMENT_ID IN (SELECT DEPARTMENT_ID
-                           FROM EMPLOYEES
-                          WHERE LAST_NAME LIKE '%u%');
-
---21. Write a query to display the last name, department number, and salary of any employee whose department number and salary both match the department number and salary of any employee who earns a commission.
-
-SELECT LAST_NAME, DEPARTMENT_ID, SALARY
-  FROM EMPLOYEES
- WHERE (SALARY, DEPARTMENT_ID) IN (SELECT SALARY, DEPARTMENT_ID
-                                     FROM EMPLOYEES
-                                    WHERE COMMISSION_PCT IS NOT NULL);
-
---22. Create a query to display the last name, hire date, and salary for all employees who have the same salary and commission as Kochhar.
-
-SELECT LAST_NAME, HIRE_DATE, SALARY
-  FROM EMPLOYEES
- WHERE     (SALARY, NVL (COMMISSION_PCT, 0)) IN (SELECT SALARY,
-                                                        NVL (COMMISSION_PCT,
-                                                             0)
-                                                   FROM EMPLOYEES
-                                                  WHERE LAST_NAME =
-                                                           ’Kochhar’)
-       AND LAST_NAME != ’Kochhar’;
-
---23. Write a query to find all employees who earn more than the average salary in their departments. Display last name, salary, department ID, and the average salary for the department. Sort by average salary. Use aliases for the columns retrieved by the query as shown in the sample output.
-
-  SELECT E.LAST_NAME ENAME,
-         E.SALARY SALARY,
-         E.DEPARTMENT_ID DEPTNO,
-         AVG (A.SALARY) DEPT_AVG
-    FROM EMPLOYEES E, EMPLOYEES A
-   WHERE     E.DEPARTMENT_ID = A.DEPARTMENT_ID
-         AND E.SALARY > (SELECT AVG (SALARY)
-                           FROM EMPLOYEES
-                          WHERE DEPARTMENT_ID = E.DEPARTMENT_ID)
-GROUP BY E.LAST_NAME, E.SALARY, E.DEPARTMENT_ID
-ORDER BY AVG (A.SALARY);
+CREATE TRIGGER TRIG_UPDATE
+   AFTER INSERT
+   ON BOOKING
+   FOR EACH ROW
+BEGIN
+   UPDATE HALLS
+      SET NOOFBOOKINGS = NOOFBOOKINGS + 1
+    WHERE HNAME = :NEW.HNAME;
+END;
+/
